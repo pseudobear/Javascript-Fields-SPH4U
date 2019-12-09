@@ -1,0 +1,8 @@
+{
+  "name": "fields",
+  "version": "1.0.0",
+  "description": "physics project for simulating various kinds of fields",
+  "main": "index.js",
+  "author": "Michael Li",
+  "license": "MIT"
+}
