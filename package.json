@@ -4,5 +4,9 @@
   "description": "physics project for simulating various kinds of fields",
   "main": "index.js",
   "author": "Michael Li",
-  "license": "MIT"
+  "license": "MIT",
+  "repository": "https://gitlab.com/pseudobear/javascript-fields-sph4u.git",
+  "dependencies": {
+    "jquery": "^3.4.1"
+  }
 }
