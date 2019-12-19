@@ -65,20 +65,20 @@ function loop(){                //main game loop
   //computing physics
   for(var i = 0; i<massList.length; i++){
     if(massList[i].hasOwnProperty("xaccel")){
+      //calculating forces on objects
       for(var j = 0; j<massList.length; j++){
         if(i!=j){
           var force = (distance(massList[i].x,massList[i].y,massList[j].x,massList[j].y));
           console.log(i+" force on "+j+" is "+force);
         }
       }
-
       //changing velocity based on acceleration
-      //massList[i].xvel+=massList[i].xaccel;
-      //massList[i].yvel+=massList[i].yaccel;
+      massList[i].xvel+=massList[i].xaccel;
+      massList[i].yvel+=massList[i].yaccel;
        
       //changing position based on velocity;
-      //massList[i].x+=massList[i].xvel;
-      //massList[i].y+=massList[i].yvel;
+      massList[i].x+=massList[i].xvel;
+      massList[i].y+=massList[i].yvel;
     }
   } 
   window.requestAnimationFrame(loop);
