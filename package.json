@@ -6,7 +6,5 @@
   "author": "Michael Li",
   "license": "MIT",
   "repository": "https://gitlab.com/pseudobear/javascript-fields-sph4u.git",
-  "dependencies": {
-    "jquery": "^3.4.1"
-  }
+  "dependencies": {}
 }
