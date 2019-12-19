@@ -1,3 +1,3 @@
 # Javascript Fields SPH4U
 
-a visual fields simulation to demonstrate how fields work
+a short 3 level minigame to illustrate fields
