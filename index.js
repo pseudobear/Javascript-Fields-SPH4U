@@ -6,6 +6,7 @@ ctx.font = "30px Arial";
 
 //object and variable declaration
 var massList = new Array();
+var go = false;
 const gravConstBig = 1000;
 const gravConstSmall =250;
 
@@ -25,17 +26,18 @@ function MovingMass(x,y,xvel,yvel,xaccel,yaccel){
 }
 //key event listeners
 document.addEventListener("keydown", function (event){
-  if(event.key=="ArrowLeft"){
-  }
-  if(event.key=="ArrowRight"){
-  }
-  if(event.key=="ArrowUp"){
-    alert('up key pressed');
+  if(event.key=="Enter"){
+    if(!go)go=true;
+    else{go=false;}
+    console.log(go);
   }
 });
 
 //functions
-function drawMass(x,y){
+function drawMass(x,y,gravConst){
+  if(gravConst==gravConstBig)ctx.fillStyle = "#2B2D2F";
+  if(gravConst==gravConstSmall)ctx.fillStyle = "#a9a9a9";
+  if(gravConst==null)ctx.fillStyle = "#FF0000";
   ctx.beginPath();
   ctx.arc(x, y, 20, 0, 2*Math.PI, false);
   ctx.fill();
@@ -80,7 +82,7 @@ function init(){
   massList.push(STM2);
   massList.push(STM);
   massList.push(MTM);
-  
+  alert("Hello! Welcome to my gravitational field simulation. This program was created to demonstrate the workings of a gravitational field. The grey masses are stationary and will produce a gravitational field. The darker grey represents a heavier mass and will produce a larger gravitational field. press ENTER to start the engine"); 
   window.requestAnimationFrame(loop);
 }
 
@@ -89,8 +91,9 @@ function loop(){                //main game loop
   ctx.clearRect(0, 0, 3000, 3000); // clear canvas
   //drawing objects
   for(var i = 0; i<massList.length; i++){
-    if(!massList[i].hasOwnProperty("src")||massList[i].src==null){
-      drawMass(massList[i].x,massList[i].y);
+    if(!massList[i].hasOwnProperty("src")||(massList[i].src==null)){
+      if(massList[i].hasOwnProperty("grav"))drawMass(massList[i].x,massList[i].y,massList[i].grav);
+      else{drawMass(massList[i].x,massList[i].y,null);}
     }
     if(massList[i].hasOwnProperty("src")&&massList[i].src!=null){
       drawImage(massList[i].x,massList[i].y,massList[i].src);
@@ -98,7 +101,7 @@ function loop(){                //main game loop
   } 
 
   //computing physics
-  for(var i = 0; i<massList.length; i++){
+  for(var i = 0; i<massList.length && go; i++){
     //initializing variables
     var x1 = massList[i].x;
     var y1 = massList[i].y;
