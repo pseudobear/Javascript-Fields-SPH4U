@@ -11,7 +11,7 @@ var go = false;
 var stick = false;
 var edit = true;
 const gravConstBig = 1000;
-const gravConstSmall =250;
+const gravConstSmall =0;
 const m = {
   x: innerWidth / 2,
   y: innerHeight / 2
@@ -69,6 +69,16 @@ window.onmousemove = function(e){
   m.y = e.clientY;
 }
 //functions
+function corAng(angle){
+  var rad = angle%(Math.PI*2);    //correcting for full rotations
+  if(rad<0){                      //removing negative
+    rad = (2*Math.PI)+rad;
+  }
+  return rad;
+}
+function deg(rad){
+  return (360*rad)/(Math.PI*2);
+}
 function drawMass(x,y,gravConst){
   if(gravConst==gravConstBig)ctx.fillStyle = "#2B2D2F";
   if(gravConst==gravConstSmall)ctx.fillStyle = "#a9a9a9";
@@ -139,6 +149,10 @@ function loop(){                //main game loop
   ctx.clearRect(0, 0, 3000, 3000); // clear canvas
   //drawing objects
   for(var i = 0; i<massList.length; i++){
+    if(massList[i].follow){
+      massList[i].x = m.x;
+      massList[i].y = m.y;
+    }
     if(!massList[i].hasOwnProperty("src")||(massList[i].src==null)){
       if(massList[i].hasOwnProperty("grav"))drawMass(massList[i].x,massList[i].y,massList[i].grav);
       else{drawMass(massList[i].x,massList[i].y,null);}
@@ -200,10 +214,51 @@ function loop(){                //main game loop
             //bearing check method
              
             //1. find bearings of moving mass in canvas axis
-            var bearing = Math.atan2(yvel,xvel); 
-            if(distance(x1,y1,x2,y2)<distance(x1+xvel,y1+yvel,x2,y2)){    //checking if collision makes sense
+            var bearing = Math.abs(Math.atan2(yvel,xvel)); 
+            var collisionAngle = corAng(Math.atan2(y1-y2,x2-x1));
+            var resultantAngle = corAng(collisionAngle-(bearing-collisionAngle)+180); 
+
+            //2. find the magnitude of the velocity vector
+            var velMag = distance(xvel,yvel,0,0);
+
+            //3. calculating the acute angle and determining resultant xvel and yvel
+            var acuteAngle = resultantAngle;
+            if(resultantAngle<Math.PI/2){
+               
+            }
+            if(resultantAngle<Math.PI && resultantAngle>(Math.PI/2)){
+              acuteAngle = Math.PI-resultantAngle;
+            }
+            if(resultantAngle<(3*Math.PI)/2 && resultantAngle>Math.PI){
+              acuteAngle = resultantAngle-Math.PI;
+            }
+            if(resultantAngle<(2*Math.PI) && resultantAngle>(3*Math.PI)/2){
+              acuteAngle = (2*Math.PI)-resultantAngle;
+            }
+            //other cases
+            if(resultantAngle==0){
+              xvel = velMag;
+              yvel = 0;
+            }
+            if(resultantANgle==Math.PI/2){
+              xvel = 0;
+              yvel = -velMag;
+            }
+            if(resultantAngle==Math.PI){
+              xvel = -velMag;
+              yvel = 0;
+            }
+            if(resultantAngle==(3*Math.pi)/2){
+              xvel = 0;
+              yvel = velMag;
+            }
+
               console.log("----------------------------"); 
-              console.log("angle of collision "+angle);
+              console.log("y velocity " +yvel);
+              console.log("x velocity " +xvel);
+              console.log("      bearing of velocity vector "+deg(bearing));
+              console.log("collision angle from moving mass "+deg(collisionAngle));
+              console.log("                 resultant angle " +deg(resultantAngle));
               console.log("difference in x "+(x1-x2));
               console.log("difference in x after applying xvel "+(x1-x2+xvel));
               console.log("calculated difference in distance "+(distance(x1+xvel,y1+yvel,x2,y2)-distance(x1,y1,x2,y2)));
@@ -211,6 +266,7 @@ function loop(){                //main game loop
               console.log(" velocity after "+distance(xvel,yvel,0,0))
               console.log(" net accel      "+distance(massList[i].xaccel, massList[i].yaccel,0,0));
               console.log("----------------------------");
+            if(distance(x1,y1,x2,y2)<distance(x1+xvel,y1+yvel,x2,y2)){    //checking if collision makes sense
               massList[i].xvel = xvel;
               massList[i].yvel = yvel;
             }
