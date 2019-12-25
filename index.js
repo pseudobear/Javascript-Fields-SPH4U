@@ -1,20 +1,38 @@
 const canvas = document.getElementById("drawing");
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
-const ctx = canvas.getContext("2d")
+const ctx = canvas.getContext("2d");
 ctx.font = "30px Arial";
 
 //object and variable declaration
 var massList = new Array();
+var boundList = new Array();
 var go = false;
+var stick = false;
+var edit = true;
 const gravConstBig = 1000;
 const gravConstSmall =250;
-
-function StationaryMass(x,y,grav,src){
+const m = {
+  x: innerWidth / 2,
+  y: innerHeight / 2
+};
+function goalMass(x,y){
+  this.x = x;
+  this.y = y;
+  this.goal = true;
+}
+function Boundary(x1,y1,x2,y2){
+  this.x1 = x1;
+  this.y1 = y1;
+  this.x2 = x2;
+  this.y2 = y2;
+}
+function StationaryMass(x,y,grav,src,follow){
   this.x = x;
   this.y = y;
   this.src = src;
   this.grav = grav;
+  this.follow = follow;
 }
 function MovingMass(x,y,xvel,yvel,xaccel,yaccel){
   this.x = x;
@@ -24,15 +42,32 @@ function MovingMass(x,y,xvel,yvel,xaccel,yaccel){
   this.xaccel = xaccel;
   this.yaccel = yaccel;
 }
-//key event listeners
+//event listeners
 document.addEventListener("keydown", function (event){
   if(event.key=="Enter"){
+    edit = false;
     if(!go)go=true;
     else{go=false;}
     console.log(go);
   }
 });
 
+document.addEventListener("click", function(event){
+  for(var i = 0; i<massList.length && edit; i++){
+    if(massList[i].hasOwnProperty("follow") && m.x>massList[i].x-20 && m.x<massList[i].x+20 && m.y>massList[i].y-20 && m.y<massList[i].y+20){
+      if(!massList[i].follow){
+        massList[i].follow = true;
+        console.log("follow " +massList[i].follow);
+      }else{
+        massList[i].follow = false;
+      }
+    }
+  }
+});
+window.onmousemove = function(e){
+  m.x = e.clientX;
+  m.y = e.clientY;
+}
 //functions
 function drawMass(x,y,gravConst){
   if(gravConst==gravConstBig)ctx.fillStyle = "#2B2D2F";
@@ -46,7 +81,12 @@ function drawMass(x,y,gravConst){
 function drawImage(x,y,src){
   var image = new Image();
   image.src = src;
-  ctx.drawImage(image,x-65,y-65,130,130);
+  ctx.drawImage(image,x-35,y-130,80,150);
+  ctx.restore();
+}
+function drawBoundary(x1,y1,x2,y2){
+  ctx.fillStyle = "#000000";
+  ctx.fillRect(x1,y1,x2-x1,y2-y1);
   ctx.restore();
 }
 function distance(x1,y1,x2,y2){
@@ -75,10 +115,18 @@ function ycomp(x1,y1,x2,y2,val){
 }
 //initializing function
 function init(){
-  STM = new StationaryMass(200,200,gravConstBig,null);
-  STM2 = new StationaryMass(400,130,gravConstSmall,null);
+  go = false;
+  edit = true;
+  GOAL = new goalMass(500,500);
+  STM = new StationaryMass(200,200,gravConstBig,null,false);
+  STM2 = new StationaryMass(400,130,gravConstSmall,null,false);
+  STM3 = new StationaryMass(200,300,gravConstSmall,null,false);
+  WALL = new Boundary(400,350,700,370);
   MTM = new MovingMass(600,250,0,0,0,0);
-  
+
+  boundList.push(WALL);
+  massList.push(GOAL);
+  massList.push(STM3);
   massList.push(STM2);
   massList.push(STM);
   massList.push(MTM);
@@ -98,8 +146,13 @@ function loop(){                //main game loop
     if(massList[i].hasOwnProperty("src")&&massList[i].src!=null){
       drawImage(massList[i].x,massList[i].y,massList[i].src);
     }
+    if(!massList[i].hasOwnProperty("grav") && !massList[i].hasOwnProperty("xaccel")){
+      drawImage(massList[i].x,massList[i].y,"");
+    }
   } 
-
+  for(var i = 0; i<boundList.length; i++){
+    drawBoundary(boundList[i].x1,boundList[i].y1,boundList[i].x2,boundList[i].y2);
+  }
   //computing physics
   for(var i = 0; i<massList.length && go; i++){
     //initializing variables
@@ -114,15 +167,15 @@ function loop(){                //main game loop
         //initializing variables
         var x2 = massList[j].x;
         var y2 = massList[j].y;
-        if(i!=j){
+        if(i!=j && massList[j].hasOwnProperty("grav")){
           massList[i].xaccel+=xcomp(x1,y1,x2,y2,gravAccel(distance(x1,y1,x2,y2),massList[j].grav));
           massList[i].yaccel+=ycomp(x1,y1,x2,y2,gravAccel(distance(x1,y1,x2,y2),massList[j].grav));
-          //kind of elastic collisions
-          if(distance(x1,y1,x2,y2)<=40){
-            console.log("collision!");
-            console.log(distance(x1,y1,x2,y2));
+          //kind of elastic collisions between masses
+          if(distance(x1,y1,x2,y2)<=42){
             xvel = massList[i].xvel;
             yvel = massList[i].yvel;
+
+            /* tilted axis check method 
             var tiltxvel = 0;
             var tiltyvel = 0;
             //1. calculate tangent angle for circles and calculate tilted axis components
@@ -142,27 +195,62 @@ function loop(){                //main game loop
             yvel+=tiltyvel*Math.cos(angle);
             xvel+=tiltxvel*Math.cos(angle);
             yvel+=tiltxvel*Math.sin(angle);
+            */
 
-            massList[i].xvel = xvel;
-            massList[i].yvel = yvel;
+            //bearing check method
+             
+            //1. find bearings of moving mass in canvas axis
+            var bearing = Math.atan2(yvel,xvel); 
+            if(distance(x1,y1,x2,y2)<distance(x1+xvel,y1+yvel,x2,y2)){    //checking if collision makes sense
+              console.log("----------------------------"); 
+              console.log("angle of collision "+angle);
+              console.log("difference in x "+(x1-x2));
+              console.log("difference in x after applying xvel "+(x1-x2+xvel));
+              console.log("calculated difference in distance "+(distance(x1+xvel,y1+yvel,x2,y2)-distance(x1,y1,x2,y2)));
+              console.log("velocity before "+distance(massList[i].xvel,massList[i].yvel,0,0));
+              console.log(" velocity after "+distance(xvel,yvel,0,0))
+              console.log(" net accel      "+distance(massList[i].xaccel, massList[i].yaccel,0,0));
+              console.log("----------------------------");
+              massList[i].xvel = xvel;
+              massList[i].yvel = yvel;
+            }
           }
-          
-          if(distance(x1,y1,x2,y2)<=34 && massList[i].xvel<1 && massList[i].yvel<1){
-            massList[i].xvel=0;
-            massList[i].yvel=0;
-            massList[i].xaccel=0;
-            massList[i].yaccel=0;
+          //sticking 
+          if(distance(x1,y1,x2,y2)<=38 && (distance(xvel,yvel,0,0)<0.4 || distance(massList[i].xaccel,massList[i].yaccel,0,0)>8)){    //sticking from repeated non-elastic collisions
+            console.log("stick!");
+            stick = true;
+          }
+
+          //outer window boundaries
+          if(x1<=20 || x1>=drawing.width-20){
+            console.log("hitbounds");
+            if(x1<=20)massList[i].x=22;
+            if(x1>=drawing.width-20)massList[i].x=drawing.width-22;
+            if((massList[i].xvel<=0 && x1<=20) || (massList[i].xvel>=0 && x1>=drawing.width-20)){
+              massList[i].xvel=-massList[i].xvel;
+              massList[i].xaccel=-massList[i].xaccel;  
+            }
+            console.log("hitbounds");
+            if(y1<=20)massList[i].y=22;
+            if(y1>=drawing.height-20)massList[i].y=drawing.height-22;
+            if((massList[i].yvel<=0 && y1<=20) || (massList[i].yvel>=0 && y1>=drawing.height-20)){
+              massList[i].yvel=-massList[i].yvel;  
+              massList[i].yaccel=-massList[i].yaccel;
+            }         
           }
         }
       }
-      //changing velocity based on acceleration
-      massList[i].xvel+=massList[i].xaccel;
-      massList[i].yvel+=massList[i].yaccel;
-      
-      console.log(massList[i].xaccel);
-      //changing position based on velocity;
-      massList[i].x+=massList[i].xvel;
-      massList[i].y+=massList[i].yvel;
+      //checking for boundary collision
+      for(var j = 0; j<boundList.length; j++){
+      }
+      if(!stick){
+        //changing velocity based on acceleration
+        massList[i].xvel+=massList[i].xaccel;
+        massList[i].yvel+=massList[i].yaccel;
+        //changing position based on velocity;
+        massList[i].x+=massList[i].xvel;
+        massList[i].y+=massList[i].yvel;
+      }
     }
   } 
   window.requestAnimationFrame(loop);
