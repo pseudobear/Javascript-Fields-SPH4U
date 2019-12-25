@@ -223,17 +223,27 @@ function loop(){                //main game loop
 
             //3. calculating the acute angle and determining resultant xvel and yvel
             var acuteAngle = resultantAngle;
-            if(resultantAngle<Math.PI/2){
-               
+            if(resultantAngle<Math.PI/2){                                     //quad 1
+              xvel = velMag*Math.cos(acuteAngle);
+              yvel = -velMag*Math.sin(acuteAngle);
             }
-            if(resultantAngle<Math.PI && resultantAngle>(Math.PI/2)){
+            if(resultantAngle<Math.PI && resultantAngle>(Math.PI/2)){         //quad 2
               acuteAngle = Math.PI-resultantAngle;
+              
+              xvel = -velMag*Math.cos(acuteAngle);
+              yvel = -velMag*Math.sin(acuteAngle);
             }
-            if(resultantAngle<(3*Math.PI)/2 && resultantAngle>Math.PI){
+            if(resultantAngle<(3*Math.PI)/2 && resultantAngle>Math.PI){       //quad 3
               acuteAngle = resultantAngle-Math.PI;
+
+              xvel = -velMag*Math.cos(acuteAngle);
+              yvel = velMag*Math.sin(acuteAngle);
             }
-            if(resultantAngle<(2*Math.PI) && resultantAngle>(3*Math.PI)/2){
+            if(resultantAngle<(2*Math.PI) && resultantAngle>(3*Math.PI)/2){   //quad 4
               acuteAngle = (2*Math.PI)-resultantAngle;
+
+              xvel = velMag*Math.cos(acuteAngle);
+              yvel = velMag*Math.sin(acuteAngle);
             }
             //other cases
             if(resultantAngle==0){
