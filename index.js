@@ -147,7 +147,7 @@ function loop(){                //main game loop
       drawImage(massList[i].x,massList[i].y,massList[i].src);
     }
     if(!massList[i].hasOwnProperty("grav") && !massList[i].hasOwnProperty("xaccel")){
-      drawImage(massList[i].x,massList[i].y,"");
+      drawImage(massList[i].x,massList[i].y,"https://image.flaticon.com/icons/png/512/777/777999.png");
     }
   } 
   for(var i = 0; i<boundList.length; i++){
