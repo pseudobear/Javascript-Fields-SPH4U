@@ -11,7 +11,7 @@ var go = false;
 var stick = false;
 var edit = true;
 const gravConstBig = 1000;
-const gravConstSmall =0;
+const gravConstSmall =250;
 const m = {
   x: innerWidth / 2,
   y: innerHeight / 2
@@ -33,6 +33,8 @@ function StationaryMass(x,y,grav,src,follow){
   this.src = src;
   this.grav = grav;
   this.follow = follow;
+  if(grav==1000)this.size = 50;
+  if(grav==250)this.size = 20;
 }
 function MovingMass(x,y,xvel,yvel,xaccel,yaccel){
   this.x = x;
@@ -54,7 +56,7 @@ document.addEventListener("keydown", function (event){
 
 document.addEventListener("click", function(event){
   for(var i = 0; i<massList.length && edit; i++){
-    if(massList[i].hasOwnProperty("follow") && m.x>massList[i].x-20 && m.x<massList[i].x+20 && m.y>massList[i].y-20 && m.y<massList[i].y+20){
+    if(massList[i].hasOwnProperty("follow") && m.x>massList[i].x-massList[i].size && m.x<massList[i].x+massList[i].size && m.y>massList[i].y-massList[i].size && m.y<massList[i].y+massList[i].size){
       if(!massList[i].follow){
         massList[i].follow = true;
         console.log("follow " +massList[i].follow);
@@ -79,12 +81,12 @@ function corAng(angle){
 function deg(rad){
   return (360*rad)/(Math.PI*2);
 }
-function drawMass(x,y,gravConst){
+function drawMass(x,y,gravConst,size){
   if(gravConst==gravConstBig)ctx.fillStyle = "#2B2D2F";
   if(gravConst==gravConstSmall)ctx.fillStyle = "#a9a9a9";
   if(gravConst==null)ctx.fillStyle = "#FF0000";
   ctx.beginPath();
-  ctx.arc(x, y, 20, 0, 2*Math.PI, false);
+  ctx.arc(x, y, size, 0, 2*Math.PI, false);
   ctx.fill();
   ctx.restore();
 }
@@ -147,6 +149,9 @@ function init(){
 function loop(){                //main game loop
   var ctx = document.getElementById('drawing').getContext('2d');
   ctx.clearRect(0, 0, 3000, 3000); // clear canvas
+
+  var winx = 0;
+  var winy = 0;
   //drawing objects
   for(var i = 0; i<massList.length; i++){
     if(massList[i].follow){
@@ -154,25 +159,35 @@ function loop(){                //main game loop
       massList[i].y = m.y;
     }
     if(!massList[i].hasOwnProperty("src")||(massList[i].src==null)){
-      if(massList[i].hasOwnProperty("grav"))drawMass(massList[i].x,massList[i].y,massList[i].grav);
-      else{drawMass(massList[i].x,massList[i].y,null);}
+      if(massList[i].hasOwnProperty("grav"))drawMass(massList[i].x,massList[i].y,massList[i].grav,massList[i].size);
+      else{drawMass(massList[i].x,massList[i].y,null,20);}
     }
     if(massList[i].hasOwnProperty("src")&&massList[i].src!=null){
       drawImage(massList[i].x,massList[i].y,massList[i].src);
     }
     if(!massList[i].hasOwnProperty("grav") && !massList[i].hasOwnProperty("xaccel")){
       drawImage(massList[i].x,massList[i].y,"https://image.flaticon.com/icons/png/512/777/777999.png");
+      winx = massList[i].x;
+      winy = massList[i].y;
     }
   } 
   for(var i = 0; i<boundList.length; i++){
     drawBoundary(boundList[i].x1,boundList[i].y1,boundList[i].x2,boundList[i].y2);
   }
+  
   //computing physics
   for(var i = 0; i<massList.length && go; i++){
     //initializing variables
     var x1 = massList[i].x;
     var y1 = massList[i].y;
     if(massList[i].hasOwnProperty("xaccel")){
+      //checking for win
+      var winCheck = 15+distance(massList[i].xvel,massList[i].yvel,0,0);
+      if(x1>=winx-winCheck && x1<=winx+winCheck && y1>=winy-winCheck && y1<=winy+winCheck){
+        alert("you won!")
+        go = false;
+        break;
+      }
       //calculating forces on objects
       //resetting accel values
       massList[i].xaccel = 0;
@@ -185,7 +200,7 @@ function loop(){                //main game loop
           massList[i].xaccel+=xcomp(x1,y1,x2,y2,gravAccel(distance(x1,y1,x2,y2),massList[j].grav));
           massList[i].yaccel+=ycomp(x1,y1,x2,y2,gravAccel(distance(x1,y1,x2,y2),massList[j].grav));
           //kind of elastic collisions between masses
-          if(distance(x1,y1,x2,y2)<=43+distance(massList[i].xvel,massList[i].yvel,0,0)){
+          if(distance(x1,y1,x2,y2)<=(massList[j].size+20)){
             xvel = massList[i].xvel;
             yvel = massList[i].yvel;
 
@@ -284,7 +299,7 @@ function loop(){                //main game loop
             }
           }
           //sticking 
-          if(distance(x1,y1,x2,y2)<=38 && (distance(xvel,yvel,0,0)<0.4 || distance(massList[i].xaccel,massList[i].yaccel,0,0)>8)){    //sticking from repeated non-elastic collisions
+          if(distance(x1,y1,x2,y2)<=(massList[j].size+18) && (distance(xvel,yvel,0,0)<0.4 || distance(massList[i].xaccel,massList[i].yaccel,0,0)>8)){    //sticking from repeated non-elastic collisions
             console.log("stick!");
             stick = true;
           }
