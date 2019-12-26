@@ -103,7 +103,7 @@ function distance(x1,y1,x2,y2){
   diffx = x2-x1;
   diffy = y2-y1;
   var sumpow = Math.pow(diffx,2)+Math.pow(diffy,2);
-  return Math.sqrt(sumpow);
+  return Math.abs(Math.sqrt(sumpow));
 }
 function gravAccel(r,gravConst){        //r is the distance between the two masses
   var mag=(gravConst/Math.pow(r,2));
@@ -185,7 +185,7 @@ function loop(){                //main game loop
           massList[i].xaccel+=xcomp(x1,y1,x2,y2,gravAccel(distance(x1,y1,x2,y2),massList[j].grav));
           massList[i].yaccel+=ycomp(x1,y1,x2,y2,gravAccel(distance(x1,y1,x2,y2),massList[j].grav));
           //kind of elastic collisions between masses
-          if(distance(x1,y1,x2,y2)<=42){
+          if(distance(x1,y1,x2,y2)<=43+distance(massList[i].xvel,massList[i].yvel,0,0)){
             xvel = massList[i].xvel;
             yvel = massList[i].yvel;
 
@@ -214,10 +214,17 @@ function loop(){                //main game loop
             //bearing check method
              
             //1. find bearings of moving mass in canvas axis
-            var bearing = Math.abs(Math.atan2(yvel,xvel)); 
+            var bearing = 0;
+            if(xvel>0 && yvel<0)bearing = Math.atan2(Math.abs(yvel),xvel);
+            if(xvel<0 && yvel<0)bearing = Math.PI-Math.atan2(Math.abs(yvel),Math.abs(xvel));
+            if(xvel<0 && yvel>0)bearing = Math.atan2(yvel,Math.abs(xvel))+Math.PI;
+            if(xvel>0 && yvel>0)bearing = (2*Math.PI)-Math.atan2(yvel,xvel) ;
+            if(xvel>0 && yvel==0)bearing = 0;
+            if(xvel==0 && yvel<0)bearing = Math.PI/2;
+            if(xvel<0 && yvel==0)bearing = Math.PI;
+            if(xvel==0 && yvel>0)bearing = (3*Math.PI)/2;
             var collisionAngle = corAng(Math.atan2(y1-y2,x2-x1));
-            var resultantAngle = corAng(collisionAngle-(bearing-collisionAngle)+180); 
-
+            var resultantAngle = corAng((collisionAngle-(bearing-collisionAngle))+Math.PI); 
             //2. find the magnitude of the velocity vector
             var velMag = distance(xvel,yvel,0,0);
 
@@ -250,7 +257,7 @@ function loop(){                //main game loop
               xvel = velMag;
               yvel = 0;
             }
-            if(resultantANgle==Math.PI/2){
+            if(resultantAngle==Math.PI/2){
               xvel = 0;
               yvel = -velMag;
             }
@@ -262,23 +269,18 @@ function loop(){                //main game loop
               xvel = 0;
               yvel = velMag;
             }
-
-              console.log("----------------------------"); 
-              console.log("y velocity " +yvel);
-              console.log("x velocity " +xvel);
-              console.log("      bearing of velocity vector "+deg(bearing));
-              console.log("collision angle from moving mass "+deg(collisionAngle));
-              console.log("                 resultant angle " +deg(resultantAngle));
-              console.log("difference in x "+(x1-x2));
-              console.log("difference in x after applying xvel "+(x1-x2+xvel));
-              console.log("calculated difference in distance "+(distance(x1+xvel,y1+yvel,x2,y2)-distance(x1,y1,x2,y2)));
-              console.log("velocity before "+distance(massList[i].xvel,massList[i].yvel,0,0));
-              console.log(" velocity after "+distance(xvel,yvel,0,0))
-              console.log(" net accel      "+distance(massList[i].xaccel, massList[i].yaccel,0,0));
-              console.log("----------------------------");
             if(distance(x1,y1,x2,y2)<distance(x1+xvel,y1+yvel,x2,y2)){    //checking if collision makes sense
               massList[i].xvel = xvel;
               massList[i].yvel = yvel;
+
+              console.log("----------------------------"); 
+              console.log("      bearing of velocity vector "+deg(bearing));
+              console.log("collision angle from moving mass "+deg(collisionAngle));
+              console.log("                 resultant angle "+deg(resultantAngle));
+              console.log("                 distance beween "+distance(x1,y1,x2,y2));
+              console.log("calculated difference in distance "+(distance(x1+xvel,y1+yvel,x2,y2)-distance(x1,y1,x2,y2)));
+              console.log(" net accel      "+distance(massList[i].xaccel, massList[i].yaccel,0,0));
+              console.log("----------------------------");
             }
           }
           //sticking 
