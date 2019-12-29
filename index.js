@@ -304,6 +304,7 @@ function loop(){                //main game loop
             stick = true;
           }
 
+          //boundary collision check
           //outer window boundaries
           if(x1<=20 || x1>=drawing.width-20){
             console.log("hitbounds");
