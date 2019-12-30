@@ -303,29 +303,39 @@ function loop(){                //main game loop
             console.log("stick!");
             stick = true;
           }
-
-          //boundary collision check
-          //outer window boundaries
-          if(x1<=20 || x1>=drawing.width-20){
-            console.log("hitbounds");
-            if(x1<=20)massList[i].x=22;
-            if(x1>=drawing.width-20)massList[i].x=drawing.width-22;
-            if((massList[i].xvel<=0 && x1<=20) || (massList[i].xvel>=0 && x1>=drawing.width-20)){
-              massList[i].xvel=-massList[i].xvel;
-              massList[i].xaccel=-massList[i].xaccel;  
-            }
-            console.log("hitbounds");
-            if(y1<=20)massList[i].y=22;
-            if(y1>=drawing.height-20)massList[i].y=drawing.height-22;
-            if((massList[i].yvel<=0 && y1<=20) || (massList[i].yvel>=0 && y1>=drawing.height-20)){
-              massList[i].yvel=-massList[i].yvel;  
-              massList[i].yaccel=-massList[i].yaccel;
-            }         
-          }
         }
+      }
+      //outer window boundaries
+      if(x1<=20 || x1>=drawing.width-20){
+        console.log("hitbounds");
+        if(x1<=20)massList[i].x=22;
+        if(x1>=drawing.width-20)massList[i].x=drawing.width-22;
+        if((massList[i].xvel<=0 && x1<=20) || (massList[i].xvel>=0 && x1>=drawing.width-20)){
+          massList[i].xvel=-massList[i].xvel;
+          massList[i].xaccel=-massList[i].xaccel;  
+        }
+        console.log("hitbounds");
+        if(y1<=20)massList[i].y=22;
+        if(y1>=drawing.height-20)massList[i].y=drawing.height-22;
+        if((massList[i].yvel<=0 && y1<=20) || (massList[i].yvel>=0 && y1>=drawing.height-20)){
+          massList[i].yvel=-massList[i].yvel;  
+          massList[i].yaccel=-massList[i].yaccel;
+        }         
       }
       //checking for boundary collision
       for(var j = 0; j<boundList.length; j++){
+        var x = massList[i].x;
+        var y = massList[i].y;
+        var bx1 = boundList[j].x1;
+        var bx2 = boundList[j].x2;
+        var by1 = boundList[j].y1;
+        var by2 = boundList[j].y2;
+        if((x>=bx1-20 || x<=x2+20) && y>=y1-10 && y<=y2+10){
+          massList[i].xvel = -massList[i].xvel;
+        }
+        if((y>=by1-20 || y<=y2+20) && x>=x1-10 && x<=x2+10){
+          massList[i].yvel = -massList[i].yvel;
+        }
       }
       if(!stick){
         //changing velocity based on acceleration
