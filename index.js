@@ -142,7 +142,7 @@ function init(){
   massList.push(STM2);
   massList.push(STM);
   massList.push(MTM);
-  alert("Hello! Welcome to my gravitational field simulation. This program was created to demonstrate the workings of a gravitational field. The grey masses are stationary and will produce a gravitational field. The darker grey represents a heavier mass and will produce a larger gravitational field. press ENTER to start the engine"); 
+  alert("Hello! Welcome to my gravitational field simulation. This program was created to demonstrate the workings of a gravitational field. The grey masses are stationary and will produce a gravitational field. The darker grey represents a heavier mass and will produce a larger gravitational field. TRY TO GET THE RED BALL TO ENTER THE GOAL. CLICK THE STATIONARY MASSES TO MOVE THEM. press ENTER to start the engine"); 
   window.requestAnimationFrame(loop);
 }
 
@@ -288,14 +288,14 @@ function loop(){                //main game loop
               massList[i].xvel = xvel;
               massList[i].yvel = yvel;
 
-              console.log("----------------------------"); 
-              console.log("      bearing of velocity vector "+deg(bearing));
-              console.log("collision angle from moving mass "+deg(collisionAngle));
-              console.log("                 resultant angle "+deg(resultantAngle));
-              console.log("                 distance beween "+distance(x1,y1,x2,y2));
+              console.log("----------------collision----------------"); 
+              console.log("       bearing of velocity vector "+deg(bearing));
+              console.log(" collision angle from moving mass "+deg(collisionAngle));
+              console.log("                  resultant angle "+deg(resultantAngle));
+              console.log("                  distance beween "+distance(x1,y1,x2,y2));
               console.log("calculated difference in distance "+(distance(x1+xvel,y1+yvel,x2,y2)-distance(x1,y1,x2,y2)));
               console.log(" net accel      "+distance(massList[i].xaccel, massList[i].yaccel,0,0));
-              console.log("----------------------------");
+              console.log("-----------------------------------------");
             }
           }
           //sticking 
@@ -330,12 +330,16 @@ function loop(){                //main game loop
         var bx2 = boundList[j].x2;
         var by1 = boundList[j].y1;
         var by2 = boundList[j].y2;
-        if((x>=bx1-20 || x<=x2+20) && y>=y1-10 && y<=y2+10){
+        if(((x>=bx1-20 && x<bx1)||(x<=bx2+20 && x>bx2)) && y>=by1-10 && y<=by2+10){
+          console.log("boundary collision x");
           massList[i].xvel = -massList[i].xvel;
         }
-        if((y>=by1-20 || y<=y2+20) && x>=x1-10 && x<=x2+10){
+        if(((y>=by1-20 && y<by1)||(y<=by2+20 && y>by2)) && x>=bx1-10 && x<=bx2+10){
+          console.log("boundary collision y");
           massList[i].yvel = -massList[i].yvel;
         }
+        //sticking boundary collision
+          //to be written 
       }
       if(!stick){
         //changing velocity based on acceleration
