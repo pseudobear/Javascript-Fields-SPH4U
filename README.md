@@ -1,3 +1,3 @@
 # Javascript Fields SPH4U
 
-a short 3 level minigame to illustrate fields
+a short 1 level minigame to illustrate fields
